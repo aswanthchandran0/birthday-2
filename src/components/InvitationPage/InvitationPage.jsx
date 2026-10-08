@@ -26,23 +26,16 @@ function ReelVideo({ videoSrc, bgMusicRef }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [needsTap, setNeedsTap] = useState(false);
 
-  // Pause background music when this video starts playing
   const pauseBgMusic = () => {
     const bgMusic = bgMusicRef?.current;
-    if (bgMusic && !bgMusic.paused) {
-      bgMusic.pause();
-    }
+    if (bgMusic && !bgMusic.paused) bgMusic.pause();
   };
 
-  // Resume background music when this video pauses/stops
   const resumeBgMusic = () => {
     const bgMusic = bgMusicRef?.current;
-    if (bgMusic && bgMusic.paused) {
-      bgMusic.play().catch(() => {});
-    }
+    if (bgMusic && bgMusic.paused) bgMusic.play().catch(() => {});
   };
 
-  // Auto-play / pause on scroll
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -60,7 +53,7 @@ function ReelVideo({ videoSrc, bgMusicRef }) {
                   setIsPlaying(true);
                   setIsMuted(false);
                   setNeedsTap(false);
-                  pauseBgMusic(); // ← Pause bg music when video starts
+                  pauseBgMusic();
                 })
                 .catch(() => {
                   video.muted = true;
@@ -70,12 +63,12 @@ function ReelVideo({ videoSrc, bgMusicRef }) {
                     .then(() => {
                       setIsPlaying(true);
                       setNeedsTap(false);
-                      pauseBgMusic(); // ← Pause bg music when video starts
+                      pauseBgMusic();
                     })
                     .catch(() => {
                       setIsPlaying(false);
                       setNeedsTap(true);
-                      resumeBgMusic(); // ← Resume bg music if video can't play
+                      resumeBgMusic();
                     });
                 });
             }
@@ -95,7 +88,6 @@ function ReelVideo({ videoSrc, bgMusicRef }) {
     return () => observer.unobserve(video);
   }, [bgMusicRef]);
 
-  // Handle play/pause to control bg music
   const handleTap = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -108,7 +100,7 @@ function ReelVideo({ videoSrc, bgMusicRef }) {
           setIsPlaying(true);
           setIsMuted(false);
           setNeedsTap(false);
-          pauseBgMusic(); // ← Pause bg music
+          pauseBgMusic();
         })
         .catch(() => {
           video.muted = true;
@@ -116,18 +108,16 @@ function ReelVideo({ videoSrc, bgMusicRef }) {
           video.play().then(() => {
             setIsPlaying(true);
             setNeedsTap(false);
-            pauseBgMusic(); // ← Pause bg music
+            pauseBgMusic();
           });
         });
     } else {
       video.pause();
       setIsPlaying(false);
-      // If user pauses the video, resume bg music
       resumeBgMusic();
     }
   };
 
-  // When video ends, resume bg music (in case loop is off)
   const handleVideoEnd = () => {
     setIsPlaying(false);
     resumeBgMusic();
@@ -170,15 +160,50 @@ function ReelVideo({ videoSrc, bgMusicRef }) {
         </div>
       )}
 
-      {/* Tap for sound hint */}
+      {/* Tap for sound hint (top of screen) */}
       {isMuted && isPlaying && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 pointer-events-none">
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 pointer-events-none">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
           </svg>
           <span className="text-white text-xs">Tap for sound</span>
         </div>
+      )}
+
+      {/* "Keep Scrolling" hint — shows on EVERY video */}
+      {isPlaying && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none"
+        >
+          <span
+            className="text-white/90 text-xs tracking-[0.25em] font-light"
+            style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}
+          >
+            KEEP SCROLLING
+          </span>
+
+          {/* Bouncing arrow */}
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-white/80"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+              style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.9))' }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );
@@ -288,7 +313,11 @@ export default function InvitationPage({ bgMusicRef }) {
 
       {/* --- FULL-SCREEN REELS --- */}
       {REELS.map((videoSrc, index) => (
-        <ReelVideo key={index} videoSrc={videoSrc} bgMusicRef={bgMusicRef} />
+        <ReelVideo
+          key={index}
+          videoSrc={videoSrc}
+          bgMusicRef={bgMusicRef}
+        />
       ))}
 
       {/* --- FINAL PARAGRAPH --- */}

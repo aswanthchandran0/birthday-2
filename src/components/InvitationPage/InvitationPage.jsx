@@ -20,9 +20,27 @@ const COLLAGE_PHOTOS = [photo1, photo2, photo3, photo4, photo5, photo6];
 const REELS = [Video2, video1, video3, video4];
 
 // --- AUTO-PLAYING REEL COMPONENT ---
-function ReelVideo({ videoSrc }) {  // <-- removed poster prop
+function ReelVideo({ videoSrc, bgMusicRef }) {
   const videoRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [needsTap, setNeedsTap] = useState(false);
+
+  // Pause background music when this video starts playing
+  const pauseBgMusic = () => {
+    const bgMusic = bgMusicRef?.current;
+    if (bgMusic && !bgMusic.paused) {
+      bgMusic.pause();
+    }
+  };
+
+  // Resume background music when this video pauses/stops
+  const resumeBgMusic = () => {
+    const bgMusic = bgMusicRef?.current;
+    if (bgMusic && bgMusic.paused) {
+      bgMusic.play().catch(() => {});
+    }
+  };
 
   // Auto-play / pause on scroll
   useEffect(() => {
@@ -33,61 +51,127 @@ function ReelVideo({ videoSrc }) {  // <-- removed poster prop
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Try to play UNMUTED first
             video.muted = false;
             const playPromise = video.play();
 
-            // If browser blocks unmuted autoplay, fall back to muted
             if (playPromise !== undefined) {
-              playPromise.catch(() => {
-                video.muted = true;
-                setIsMuted(true);
-                video.play().catch(() => {});
-              });
-            } else {
-              setIsMuted(false);
+              playPromise
+                .then(() => {
+                  setIsPlaying(true);
+                  setIsMuted(false);
+                  setNeedsTap(false);
+                  pauseBgMusic(); // ← Pause bg music when video starts
+                })
+                .catch(() => {
+                  video.muted = true;
+                  setIsMuted(true);
+                  video
+                    .play()
+                    .then(() => {
+                      setIsPlaying(true);
+                      setNeedsTap(false);
+                      pauseBgMusic(); // ← Pause bg music when video starts
+                    })
+                    .catch(() => {
+                      setIsPlaying(false);
+                      setNeedsTap(true);
+                      resumeBgMusic(); // ← Resume bg music if video can't play
+                    });
+                });
             }
           } else {
             video.pause();
+            setIsPlaying(false);
           }
         });
       },
-      { threshold: 0.6 }
+      {
+        threshold: 0.35,
+        rootMargin: '100px 0px 100px 0px',
+      }
     );
 
     observer.observe(video);
     return () => observer.unobserve(video);
-  }, []);
+  }, [bgMusicRef]);
 
-  // Tap to toggle mute
-  const toggleMute = () => {
+  // Handle play/pause to control bg music
+  const handleTap = () => {
     const video = videoRef.current;
     if (!video) return;
-    video.muted = !video.muted;
-    setIsMuted(video.muted);
+
+    if (video.paused) {
+      video.muted = false;
+      video
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          setIsMuted(false);
+          setNeedsTap(false);
+          pauseBgMusic(); // ← Pause bg music
+        })
+        .catch(() => {
+          video.muted = true;
+          setIsMuted(true);
+          video.play().then(() => {
+            setIsPlaying(true);
+            setNeedsTap(false);
+            pauseBgMusic(); // ← Pause bg music
+          });
+        });
+    } else {
+      video.pause();
+      setIsPlaying(false);
+      // If user pauses the video, resume bg music
+      resumeBgMusic();
+    }
+  };
+
+  // When video ends, resume bg music (in case loop is off)
+  const handleVideoEnd = () => {
+    setIsPlaying(false);
+    resumeBgMusic();
   };
 
   return (
-    <div 
-      className="relative w-full h-screen snap-start snap-always bg-black overflow-hidden"
-      onClick={toggleMute}
+    <div
+      className="relative w-full h-screen snap-start snap-always bg-black overflow-hidden cursor-pointer flex items-center justify-center"
+      onClick={handleTap}
     >
-      {/* 
-        IMPORTANT: 
-        - No `poster` attribute → browser shows first frame of THIS video
-        - `preload="auto"` → loads the first frame quickly so it shows up as the cover
-      */}
       <video
         ref={videoRef}
         src={videoSrc}
         loop
         playsInline
         preload="auto"
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain"
+        onEnded={handleVideoEnd}
       />
 
+      {/* Big center play button */}
+      {needsTap && !isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-20 h-20 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border-2 border-white/40">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+        </div>
+      )}
+
+      {/* Small pause indicator */}
+      {!isPlaying && !needsTap && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+        </div>
+      )}
+
       {/* Tap for sound hint */}
-      {isMuted && (
+      {isMuted && isPlaying && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 pointer-events-none">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
@@ -111,13 +195,13 @@ function Divider() {
   );
 }
 
-export default function InvitationPage() {
+export default function InvitationPage({ bgMusicRef }) {
   return (
     <div className="min-h-screen bg-[#f4f0e6] text-[#3a2e2a] flex flex-col items-center">
-      
+
       {/* --- CARD SECTION (Header + Collage) --- */}
       <div className="w-full max-w-md bg-[#fdfaf3] shadow-2xl sm:rounded-sm overflow-hidden border border-[#d8cfc0]">
-        
+
         {/* --- HEADER --- */}
         <div className="text-center pt-10 pb-6 px-6">
           <h1 className="text-4xl font-serif text-[#8b6f5e] tracking-wide" style={{ fontFamily: 'Great Vibes, cursive' }}>
@@ -133,57 +217,57 @@ export default function InvitationPage() {
         {/* --- 6 PHOTO COLLAGE --- */}
         <div className="px-6 pb-6">
           <p className="text-xs tracking-[0.3em] text-[#8b6f5e] text-center mb-4">OUR MOMENTS</p>
-          
+
           <div className="grid grid-cols-3 gap-2 auto-rows-[100px] grid-flow-dense">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
               initial={{ rotate: -2 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              transition={{ type: 'spring', stiffness: 300 }}
               className="col-span-2 row-span-2 bg-white p-1.5 shadow-md rounded-sm"
             >
               <img src={COLLAGE_PHOTOS[0]} alt="Memory 1" className="w-full h-full object-cover rounded-sm" />
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
               initial={{ rotate: 3 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              transition={{ type: 'spring', stiffness: 300 }}
               className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
             >
               <img src={COLLAGE_PHOTOS[1]} alt="Memory 2" className="w-full h-full object-cover rounded-sm" />
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
               initial={{ rotate: -4 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              transition={{ type: 'spring', stiffness: 300 }}
               className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
             >
               <img src={COLLAGE_PHOTOS[2]} alt="Memory 3" className="w-full h-full object-cover rounded-sm" />
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
               initial={{ rotate: 2 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              transition={{ type: 'spring', stiffness: 300 }}
               className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
             >
               <img src={COLLAGE_PHOTOS[3]} alt="Memory 4" className="w-full h-full object-cover rounded-sm" />
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
               initial={{ rotate: -3 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              transition={{ type: 'spring', stiffness: 300 }}
               className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
             >
               <img src={COLLAGE_PHOTOS[4]} alt="Memory 5" className="w-full h-full object-cover rounded-sm" />
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
               initial={{ rotate: 5 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              transition={{ type: 'spring', stiffness: 300 }}
               className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
             >
               <img src={COLLAGE_PHOTOS[5]} alt="Memory 6" className="w-full h-full object-cover rounded-sm" />
@@ -204,17 +288,17 @@ export default function InvitationPage() {
 
       {/* --- FULL-SCREEN REELS --- */}
       {REELS.map((videoSrc, index) => (
-        <ReelVideo key={index} videoSrc={videoSrc} />  // <-- No more poster prop
+        <ReelVideo key={index} videoSrc={videoSrc} bgMusicRef={bgMusicRef} />
       ))}
 
       {/* --- FINAL PARAGRAPH --- */}
       <div className="w-full max-w-md bg-[#f4f0e6] border border-[#d8cfc0]">
         <div className="py-10 px-8 text-center">
           <p className="text-xs tracking-[0.3em] text-[#8b6f5e] mb-4">A WISH FROM MY HEART</p>
-          
+
           <p className="text-sm text-[#5a4e46] leading-relaxed font-light mb-4">
-            Once again, wishing you the happiest of birthdays! 🎂 
-            May this year bring you endless joy, beautiful moments, and everything your heart desires. 
+            Once again, wishing you the happiest of birthdays! 🎂
+            May this year bring you endless joy, beautiful moments, and everything your heart desires.
             I hope all the good things you deserve find their way to you — because you truly light up every life you touch.
           </p>
 
@@ -228,7 +312,7 @@ export default function InvitationPage() {
             With love,
           </p>
           <p className="text-3xl text-[#8b6f5e] mt-2" style={{ fontFamily: 'Great Vibes, cursive' }}>
-             Sayooooj😜
+            Sayooooj😜
           </p>
         </div>
       </div>

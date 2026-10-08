@@ -23,33 +23,32 @@ export default function SurprisePage({ onNextPage }) {
     size: Math.random() * 30 + 30,
   }));
 
-  // Step 5 uses the image background
   const isImageStep = step === 5;
 
   return (
-    <div 
+    <div
       className={`relative flex min-h-screen items-center justify-center overflow-hidden transition-colors duration-1000 ${
-        isImageStep 
-          ? 'bg-black' 
-          : step === 6 
-            ? 'bg-[#2a1a3a]' 
-            : step === 4 
-              ? 'bg-[#1a0505]' 
+        isImageStep
+          ? 'bg-black'
+          : step === 6
+            ? 'bg-[#2a1a3a]'
+            : step === 4
+              ? 'bg-[#1a0505]'
               : 'bg-[#0a0a0f]'
       }`}
     >
       {/* --- STEP 5: FULL BACKGROUND IMAGE --- */}
       {isImageStep && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
           style={{ backgroundImage: `url(${backgroundImage})` }}
         />
       )}
 
-      {/* --- FLOATING PARTICLES (Dark steps only) --- */}
+      {/* --- FLOATING PARTICLES --- */}
       {step < 4 && [...Array(15)].map((_, i) => (
         <motion.div key={i} className="absolute h-2 w-2 rounded-full bg-red-500 blur-[2px]"
           initial={{ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight, opacity: 0 }}
@@ -58,7 +57,7 @@ export default function SurprisePage({ onNextPage }) {
         />
       ))}
 
-      {/* --- STRING LIGHTS (Step 4 only) --- */}
+      {/* --- STRING LIGHTS --- */}
       {step === 4 && (
         <div className="absolute top-0 left-0 w-full flex justify-around px-2 z-20">
           {[...Array(20)].map((_, i) => (
@@ -70,25 +69,24 @@ export default function SurprisePage({ onNextPage }) {
         </div>
       )}
 
-      {/* --- BALLOONS (Step 4 only) --- */}
+      {/* --- BALLOONS --- */}
       {step === 4 && balloons.map((b) => (
         <motion.div key={b.id} className="absolute bottom-[-100px] rounded-full" style={{ left: `${b.left}%`, width: b.size, height: b.size * 1.2, backgroundColor: b.color, boxShadow: `inset -5px -5px 10px rgba(0,0,0,0.2), 0 0 15px ${b.color}40` }}
           initial={{ y: 0, opacity: 0 }} animate={{ y: [0, -window.innerHeight - 200], opacity: [0, 1, 1, 0], x: [0, Math.random() * 40 - 20, 0] }}
-          transition={{ duration: b.duration, repeat: Infinity, delay: b.delay, ease: "linear" }}
+          transition={{ duration: b.duration, repeat: Infinity, delay: b.delay, ease: 'linear' }}
         >
           <div className="absolute bottom-[-40px] left-1/2 w-0.5 h-10 bg-white/30 -translate-x-1/2" />
         </motion.div>
       ))}
 
       {/* --- CENTRAL CONTENT --- */}
-      <motion.div 
-        key={step} 
-        initial={{ opacity: 0, scale: 0.9 }} 
-        animate={{ opacity: 1, scale: 1 }} 
-        transition={{ duration: 0.6, ease: "easeOut" }} 
+      <motion.div
+        key={step}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
         className={`relative z-30 mx-4 w-[95%] sm:w-full ${isImageStep ? 'max-w-lg' : 'max-w-md'} rounded-2xl p-6 sm:p-8 text-center`}
       >
-        
         {/* STEP 1 */}
         {step === 1 && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -112,7 +110,7 @@ export default function SurprisePage({ onNextPage }) {
         {step === 3 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.3 }}>
             <h1 className="mb-8 text-3xl font-bold text-white/90" style={{ fontFamily: 'Playfair Display, serif' }}>The stage is set...</h1>
-            <motion.button whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(255, 165, 0, 0.6)" }} whileTap={{ scale: 0.95 }} onClick={() => setStep(4)} className="rounded-full bg-black border-2 border-orange-500 px-8 py-3 font-bold text-orange-500 shadow-[0_0_15px_rgba(255,165,0,0.3)] transition-all duration-300 hover:bg-orange-500 hover:text-black">Turn on the Light</motion.button>
+            <motion.button whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(255, 165, 0, 0.6)' }} whileTap={{ scale: 0.95 }} onClick={() => setStep(4)} className="rounded-full bg-black border-2 border-orange-500 px-8 py-3 font-bold text-orange-500 shadow-[0_0_15px_rgba(255,165,0,0.3)] transition-all duration-300 hover:bg-orange-500 hover:text-black">Turn on the Light</motion.button>
           </motion.div>
         )}
 
@@ -120,49 +118,52 @@ export default function SurprisePage({ onNextPage }) {
         {step === 4 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 1 }} className="flex flex-col items-center">
             <h1 className="mb-6 text-lg font-bold tracking-[0.2em] text-white/90 uppercase" style={{ fontFamily: 'Playfair Display, serif' }}>Almost there...</h1>
-            <motion.button whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255, 50, 50, 0.8)" }} whileTap={{ scale: 0.95 }} onClick={() => setStep(5)} className="relative rounded-full bg-black px-8 py-4 font-bold text-white border-2 border-red-500 shadow-[0_0_20px_rgba(255,50,50,0.5)] transition-all duration-300 hover:bg-red-500/10">
+            <motion.button whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(255, 50, 50, 0.8)' }} whileTap={{ scale: 0.95 }} onClick={() => setStep(5)} className="relative rounded-full bg-black px-8 py-4 font-bold text-white border-2 border-red-500 shadow-[0_0_20px_rgba(255,50,50,0.5)] transition-all duration-300 hover:bg-red-500/10">
               <span className="flex items-center gap-2"><span className="text-red-500 text-xl">▶</span> SHOW THE MESSAGE</span>
             </motion.button>
           </motion.div>
         )}
 
-        {/* --- STEP 5: MESSAGE OVER FULL IMAGE --- */}
+        {/* STEP 5 */}      {/* --- STEP 5: MESSAGE OVER FULL IMAGE + LIGHT CARD --- */}
         {step === 5 && (
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }} 
-            className="w-full bg-black/55 backdrop-blur-md rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border border-white/20 overflow-hidden"
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut' }}
+            className="w-full bg-black/25 backdrop-blur-[3px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-white/30 overflow-hidden"
           >
-            {/* Ornate top border */}
             <div className="pt-8 pb-4 text-center">
-              <div className="flex items-center justify-center gap-2 text-white/60">
+              <div className="flex items-center justify-center gap-2 text-white/70">
                 <span className="text-xs">✦</span>
-                <span className="w-12 h-px bg-white/40"></span>
+                <span className="w-12 h-px bg-white/50"></span>
                 <span className="text-xs">✦</span>
               </div>
             </div>
 
-            {/* Name */}
-            <h1 
-              className="text-center text-3xl sm:text-4xl text-pink-200 mb-2 px-4 drop-shadow-lg" 
-              style={{ fontFamily: 'Great Vibes, cursive' }}
+            <h1
+              className="text-center text-3xl sm:text-4xl text-pink-100 mb-2 px-4"
+              style={{
+                fontFamily: 'Great Vibes, cursive',
+                textShadow: '0 2px 12px rgba(0,0,0,0.7)',
+              }}
             >
               My Dearest Krithiiii,
             </h1>
 
-            <div className="flex items-center justify-center gap-2 text-pink-300/80 mb-6">
-              <span className="w-8 h-px bg-pink-300/40"></span>
-              <span className="text-pink-300">❤</span>
-              <span className="w-8 h-px bg-pink-300/40"></span>
+            <div className="flex items-center justify-center gap-2 text-pink-200/90 mb-6">
+              <span className="w-8 h-px bg-pink-200/60"></span>
+              <span className="text-pink-200">❤</span>
+              <span className="w-8 h-px bg-pink-200/60"></span>
             </div>
 
-            {/* Text Content */}
-            <div className="px-5 sm:px-8 pb-8 space-y-4 text-sm sm:text-base text-white/95 leading-relaxed font-light">
-              <p className="text-center text-lg sm:text-xl font-semibold text-pink-200">
+            <div
+              className="px-5 sm:px-8 pb-8 space-y-4 text-sm sm:text-base text-white leading-relaxed font-light"
+              style={{ textShadow: '0 1px 8px rgba(0,0,0,0.85)' }}
+            >
+              <p className="text-center text-lg sm:text-xl font-semibold text-pink-100">
                 Happy 20th Birthday! ❤️🎂
               </p>
-              
+
               <p>
                 Welcome to 20! ✨ I hope this new chapter of your life brings you closer to all the dreams you've been wishing for. May you always have the courage to chase what you truly want, the strength to overcome every challenge, and the happiness you deserve.
               </p>
@@ -175,25 +176,24 @@ export default function SurprisePage({ onNextPage }) {
                 Keep smiling, keep dreaming, and keep being the amazing person you are. Wishing you a beautiful year filled with happiness, success, adventures, and countless little moments that make your heart happy.
               </p>
 
-              <p className="text-center font-medium text-pink-200 pt-2 text-base">
+              <p className="text-center font-medium text-pink-100 pt-2 text-base">
                 Happy Birthday once again… have the most amazing 20th! 🫶🏻✨
               </p>
             </div>
 
-            {/* Bottom divider + button */}
             <div className="px-5 sm:px-8 pb-8">
-              <div className="flex items-center justify-center gap-2 text-white/60 mb-5">
-                <span className="w-12 h-px bg-white/40"></span>
+              <div className="flex items-center justify-center gap-2 text-white/70 mb-5">
+                <span className="w-12 h-px bg-white/50"></span>
                 <span className="text-xs">✦</span>
-                <span className="w-12 h-px bg-white/40"></span>
+                <span className="w-12 h-px bg-white/50"></span>
               </div>
 
               <div className="flex justify-center">
-                <motion.button 
-                  whileHover={{ scale: 1.05 }} 
-                  whileTap={{ scale: 0.95 }} 
-                  onClick={() => setStep(6)} 
-                  className="rounded-full border border-white/60 px-6 py-2.5 text-xs font-bold tracking-[0.2em] text-white transition-all hover:bg-white hover:text-black"
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setStep(6)}
+                  className="rounded-full border border-white/70 bg-black/20 backdrop-blur-sm px-6 py-2.5 text-xs font-bold tracking-[0.2em] text-white transition-all hover:bg-white hover:text-black"
                 >
                   ONE LAST SURPRISE
                 </motion.button>
@@ -202,7 +202,7 @@ export default function SurprisePage({ onNextPage }) {
           </motion.div>
         )}
 
-        {/* STEP 6: CAT + YES/NO */}
+        {/* STEP 6 */}
         {step === 6 && (
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="flex flex-col items-center justify-center">
             <div className="mb-[-15px] z-10">
@@ -223,8 +223,16 @@ export default function SurprisePage({ onNextPage }) {
               <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[13px] border-t-[#fce4ec]"></div>
             </div>
             <div className="flex gap-6 relative w-full justify-center h-20">
-              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={onNextPage} className="px-8 py-3 bg-[#8f6fd6] text-white font-bold rounded-full shadow-lg border-b-4 border-[#6f4fb8] hover:bg-[#7c5bc5] transition-all" style={{ fontFamily: 'Fredoka, sans-serif' }}>YES</motion.button>
-              <motion.button animate={{ x: noPosition.x, y: noPosition.y }} transition={{ type: "spring", stiffness: 300, damping: 20 }} onMouseEnter={moveNoButton} onClick={moveNoButton} className="px-8 py-3 bg-[#fce4ec] text-[#5b3fa0] font-bold rounded-full shadow-lg border-b-4 border-[#d1b3e0] transition-all absolute" style={{ fontFamily: 'Fredoka, sans-serif' }}>NO</motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onNextPage}
+                className="px-8 py-3 bg-[#8f6fd6] text-white font-bold rounded-full shadow-lg border-b-4 border-[#6f4fb8] hover:bg-[#7c5bc5] transition-all"
+                style={{ fontFamily: 'Fredoka, sans-serif' }}
+              >
+                YES
+              </motion.button>
+              <motion.button animate={{ x: noPosition.x, y: noPosition.y }} transition={{ type: 'spring', stiffness: 300, damping: 20 }} onMouseEnter={moveNoButton} onClick={moveNoButton} className="px-8 py-3 bg-[#fce4ec] text-[#5b3fa0] font-bold rounded-full shadow-lg border-b-4 border-[#d1b3e0] transition-all absolute" style={{ fontFamily: 'Fredoka, sans-serif' }}>NO</motion.button>
             </div>
           </motion.div>
         )}

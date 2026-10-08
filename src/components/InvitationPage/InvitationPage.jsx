@@ -20,7 +20,7 @@ const COLLAGE_PHOTOS = [photo1, photo2, photo3, photo4, photo5, photo6];
 const REELS = [Video2, video1, video3, video4];
 
 // --- AUTO-PLAYING REEL COMPONENT ---
-function ReelVideo({ videoSrc, bgMusicRef }) {
+function ReelVideo({ videoSrc, bgMusicRef, isLast }) {
   const videoRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -171,8 +171,8 @@ function ReelVideo({ videoSrc, bgMusicRef }) {
         </div>
       )}
 
-      {/* "Keep Scrolling" hint — shows on EVERY video */}
-      {isPlaying && (
+      {/* "Keep Scrolling" hint — hidden on last video */}
+      {isPlaying && !isLast && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -317,6 +317,7 @@ export default function InvitationPage({ bgMusicRef }) {
           key={index}
           videoSrc={videoSrc}
           bgMusicRef={bgMusicRef}
+          isLast={index === REELS.length - 1}
         />
       ))}
 

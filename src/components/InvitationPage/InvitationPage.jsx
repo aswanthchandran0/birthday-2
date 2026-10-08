@@ -121,7 +121,7 @@ export default function InvitationPage() {
         {/* --- HEADER --- */}
         <div className="text-center pt-10 pb-6 px-6">
           <h1 className="text-4xl font-serif text-[#8b6f5e] tracking-wide" style={{ fontFamily: 'Great Vibes, cursive' }}>
-            Kirthiiii
+            krithiiii
           </h1>
           <div className="flex items-center justify-center gap-3 mt-2 text-xs tracking-[0.3em] text-[#8b6f5e]">
             <span className="w-8 h-px bg-[#8b6f5e]"></span>

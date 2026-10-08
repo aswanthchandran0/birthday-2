@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import './invitation.css';
 
 // --- IMPORT YOUR ASSETS HERE ---
-import mainInvitePhoto from '../../assets/photo1.jpeg';
-import memory1 from '../../assets/photo5.PNG';
-import memory2 from '../../assets/photo2.jpeg';
-import memory3 from '../../assets/photo3.PNG';
+import photo1 from '../../assets/photo1.jpeg';
+import photo2 from '../../assets/photo5.PNG';
+import photo3 from '../../assets/photo2.jpeg';
+import photo4 from '../../assets/photo3.PNG';
+import photo5 from '../../assets/photo4.PNG';
+import photo6 from '../../assets/photo6.PNG';
 
 // Videos
 import video1 from '../../assets/video1.mp4';
@@ -14,32 +16,94 @@ import Video2 from '../../assets/IMG_2401.mp4';
 import video3 from '../../assets/IMG_2402.mp4';
 import video4 from '../../assets/IMG_2403.mp4';
 
-const PHOTOS = [mainInvitePhoto, memory1, memory2, memory3];
+const COLLAGE_PHOTOS = [photo1, photo2, photo3, photo4, photo5, photo6];
+const REELS = [Video2, video1, video3, video4];
 
-// --- REUSABLE VIDEO COMPONENT ---
-function VideoSection({ videoSrc, poster }) {
+// --- AUTO-PLAYING REEL COMPONENT ---
+function ReelVideo({ videoSrc }) {  // <-- removed poster prop
+  const videoRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(true);
+
+  // Auto-play / pause on scroll
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Try to play UNMUTED first
+            video.muted = false;
+            const playPromise = video.play();
+
+            // If browser blocks unmuted autoplay, fall back to muted
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {
+                video.muted = true;
+                setIsMuted(true);
+                video.play().catch(() => {});
+              });
+            } else {
+              setIsMuted(false);
+            }
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+
+    observer.observe(video);
+    return () => observer.unobserve(video);
+  }, []);
+
+  // Tap to toggle mute
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
   return (
-    <div className="px-6 py-6">
-      <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg border-2 border-[#e8e0d5] bg-black">
-        <video 
-          src={videoSrc} 
-          controls 
-          preload="metadata"
-          playsInline
-          className="w-full h-full object-contain"
-          poster={poster}
-        >
-          Your browser does not support the video tag.
-        </video>
-      </div>
+    <div 
+      className="relative w-full h-screen snap-start snap-always bg-black overflow-hidden"
+      onClick={toggleMute}
+    >
+      {/* 
+        IMPORTANT: 
+        - No `poster` attribute → browser shows first frame of THIS video
+        - `preload="auto"` → loads the first frame quickly so it shows up as the cover
+      */}
+      <video
+        ref={videoRef}
+        src={videoSrc}
+        loop
+        playsInline
+        preload="auto"
+        className="w-full h-full object-cover"
+      />
+
+      {/* Tap for sound hint */}
+      {isMuted && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2 pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+          </svg>
+          <span className="text-white text-xs">Tap for sound</span>
+        </div>
+      )}
     </div>
   );
 }
 
-// --- DECORATIVE DIVIDER COMPONENT ---
+// --- DECORATIVE DIVIDER ---
 function Divider() {
   return (
-    <div className="flex items-center justify-center gap-3 py-2">
+    <div className="flex items-center justify-center gap-3 py-4 bg-[#fdfaf3]">
       <span className="w-12 h-px bg-[#d8cfc0]"></span>
       <span className="text-[#a89b8c] text-xs tracking-widest">✧ ✦ ✧</span>
       <span className="w-12 h-px bg-[#d8cfc0]"></span>
@@ -48,14 +112,11 @@ function Divider() {
 }
 
 export default function InvitationPage() {
-  const [currentPhoto, setCurrentPhoto] = useState(0);
-
-  const nextPhoto = () => setCurrentPhoto((prev) => (prev + 1) % PHOTOS.length);
-  const prevPhoto = () => setCurrentPhoto((prev) => (prev - 1 + PHOTOS.length) % PHOTOS.length);
-
   return (
-    <div className="min-h-screen bg-[#f4f0e6] text-[#3a2e2a] flex justify-center py-10 px-4">
-      <div className="w-full max-w-md bg-[#fdfaf3] shadow-2xl rounded-sm overflow-hidden border border-[#d8cfc0]">
+    <div className="min-h-screen bg-[#f4f0e6] text-[#3a2e2a] flex flex-col items-center">
+      
+      {/* --- CARD SECTION (Header + Collage) --- */}
+      <div className="w-full max-w-md bg-[#fdfaf3] shadow-2xl sm:rounded-sm overflow-hidden border border-[#d8cfc0]">
         
         {/* --- HEADER --- */}
         <div className="text-center pt-10 pb-6 px-6">
@@ -69,54 +130,86 @@ export default function InvitationPage() {
           </div>
         </div>
 
-        {/* --- PHOTO SWAP SECTION --- */}
-        <div className="relative w-full aspect-[4/5] bg-[#e8e0d5] overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={currentPhoto}
-              src={PHOTOS[currentPhoto]}
-              alt={`Memory ${currentPhoto + 1}`}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.8, ease: "easeInOut" }}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          </AnimatePresence>
+        {/* --- 6 PHOTO COLLAGE --- */}
+        <div className="px-6 pb-6">
+          <p className="text-xs tracking-[0.3em] text-[#8b6f5e] text-center mb-4">OUR MOMENTS</p>
           
-          <button onClick={prevPhoto} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/70 backdrop-blur text-[#8b6f5e] flex items-center justify-center shadow-md hover:bg-white transition">←</button>
-          <button onClick={nextPhoto} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/70 backdrop-blur text-[#8b6f5e] flex items-center justify-center shadow-md hover:bg-white transition">→</button>
+          <div className="grid grid-cols-3 gap-2 auto-rows-[100px] grid-flow-dense">
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
+              initial={{ rotate: -2 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="col-span-2 row-span-2 bg-white p-1.5 shadow-md rounded-sm"
+            >
+              <img src={COLLAGE_PHOTOS[0]} alt="Memory 1" className="w-full h-full object-cover rounded-sm" />
+            </motion.div>
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-            {PHOTOS.map((_, i) => (
-              <div key={i} className={`w-2 h-2 rounded-full transition-all ${i === currentPhoto ? 'bg-white scale-125' : 'bg-white/50'}`} />
-            ))}
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
+              initial={{ rotate: 3 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
+            >
+              <img src={COLLAGE_PHOTOS[1]} alt="Memory 2" className="w-full h-full object-cover rounded-sm" />
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
+              initial={{ rotate: -4 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
+            >
+              <img src={COLLAGE_PHOTOS[2]} alt="Memory 3" className="w-full h-full object-cover rounded-sm" />
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
+              initial={{ rotate: 2 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
+            >
+              <img src={COLLAGE_PHOTOS[3]} alt="Memory 4" className="w-full h-full object-cover rounded-sm" />
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
+              initial={{ rotate: -3 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
+            >
+              <img src={COLLAGE_PHOTOS[4]} alt="Memory 5" className="w-full h-full object-cover rounded-sm" />
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 0, zIndex: 10 }}
+              initial={{ rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="col-span-1 row-span-1 bg-white p-1.5 shadow-md rounded-sm"
+            >
+              <img src={COLLAGE_PHOTOS[5]} alt="Memory 6" className="w-full h-full object-cover rounded-sm" />
+            </motion.div>
           </div>
         </div>
 
-        {/* --- VIDEO 1 --- */}
-        <VideoSection videoSrc={Video2} poster={mainInvitePhoto} />
-
         {/* --- DIVIDER --- */}
         <Divider />
+      </div>
 
-        {/* --- VIDEO 2 --- */}
-        <VideoSection videoSrc={video1} poster={mainInvitePhoto} />
+      {/* --- REELS LABEL --- */}
+      <div className="w-full max-w-md bg-[#fdfaf3] border border-t-0 border-[#d8cfc0]">
+        <p className="text-xs tracking-[0.3em] text-[#8b6f5e] text-center py-4 uppercase">
+          A Gift For You
+        </p>
+      </div>
 
-        {/* --- DIVIDER --- */}
-        <Divider />
+      {/* --- FULL-SCREEN REELS --- */}
+      {REELS.map((videoSrc, index) => (
+        <ReelVideo key={index} videoSrc={videoSrc} />  // <-- No more poster prop
+      ))}
 
-        {/* --- VIDEO 3 --- */}
-        <VideoSection videoSrc={video3} poster={mainInvitePhoto} />
-
-        {/* --- DIVIDER --- */}
-        <Divider />
-
-        {/* --- VIDEO 4 --- */}
-        <VideoSection videoSrc={video4} poster={mainInvitePhoto} />
-
-        {/* --- FINAL PARAGRAPH --- */}
-        <div className="py-10 px-8 text-center bg-[#f4f0e6] mt-4">
+      {/* --- FINAL PARAGRAPH --- */}
+      <div className="w-full max-w-md bg-[#f4f0e6] border border-[#d8cfc0]">
+        <div className="py-10 px-8 text-center">
           <p className="text-xs tracking-[0.3em] text-[#8b6f5e] mb-4">A WISH FROM MY HEART</p>
           
           <p className="text-sm text-[#5a4e46] leading-relaxed font-light mb-4">
@@ -138,8 +231,8 @@ export default function InvitationPage() {
              Sayooooj😜
           </p>
         </div>
-
       </div>
+
     </div>
   );
 }

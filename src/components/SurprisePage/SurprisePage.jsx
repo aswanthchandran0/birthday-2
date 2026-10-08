@@ -100,7 +100,7 @@ export default function SurprisePage({ onNextPage }) {
 
         {step === 5 && (
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 2.5 }} className="bg-black/80 backdrop-blur-md border border-white/10 rounded-2xl p-8 shadow-2xl">
-            <h1 className="mb-4 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-500" style={{ fontFamily: 'Playfair Display, serif' }}>My Dearest Ridhi,</h1>
+            <h1 className="mb-4 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-500" style={{ fontFamily: 'Playfair Display, serif' }}>My Dearest krithiiii,</h1>
             <p className="text-sm text-gray-300 leading-relaxed mb-6">Today isn't just a date on the calendar; it's a celebration of the light you bring into my life. Every moment with you is like a frame from a beautiful movie, and I'm so lucky to be your co-star. May this year be filled with as much magic as you give to everyone around you.</p>
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setStep(6)} className="rounded-full border border-white/20 px-6 py-2 text-xs font-bold tracking-[0.2em] text-white/80 transition-all hover:bg-white/10 hover:text-white">ONE LAST SURPRISE</motion.button>
           </motion.div>

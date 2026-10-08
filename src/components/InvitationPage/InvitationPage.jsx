@@ -4,9 +4,9 @@ import './invitation.css';
 
 // --- IMPORT YOUR ASSETS HERE ---
 import mainInvitePhoto from '../../assets/photo1.jpeg';
-import memory1 from '../../assets/photo5.png';
+import memory1 from '../../assets/photo5.PNG';
 import memory2 from '../../assets/photo2.jpeg';
-import memory3 from '../../assets/photo3.png';
+import memory3 from '../../assets/photo3.PNG';
 
 // Videos
 import video1 from '../../assets/video1.mp4';

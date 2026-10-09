@@ -241,7 +241,7 @@ export default function InvitationPage({ bgMusicRef }) {
 
         {/* --- 6 PHOTO COLLAGE --- */}
         <div className="px-6 pb-6">
-          <p className="text-xs tracking-[0.3em] text-[#8b6f5e] text-center mb-4">OUR MOMENTS</p>
+          <p className="text-xs tracking-[0.3em] text-[#8b6f5e] text-center mb-4"> WISHES</p>
 
           <div className="grid grid-cols-3 gap-2 auto-rows-[100px] grid-flow-dense">
             <motion.div
